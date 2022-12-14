@@ -1,6 +1,7 @@
 # depslib dependency file v1.0
-1670946915 source:d:\parallel_labs\group_assignment\main.c
+1670989599 source:d:\parallel_labs\group_assignment\main.c
 	<stdio.h>
 	<stdlib.h>
+	<string.h>
 	<omp.h>
 

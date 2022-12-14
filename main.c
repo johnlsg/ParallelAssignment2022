@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <omp.h>
 #define THREAD_COUNT 8
 
 int Find_bin(float elem, float bin_maxes[], int bin_count, float min_meas);
+
+//OpenMP 4.5 is used
 int main(int argc, char* argv[]) {
     //inputs
    int data_count =20;
@@ -16,33 +19,49 @@ int main(int argc, char* argv[]) {
    float bin_maxes[bin_count];
    int bin_counts[bin_count];
 
-
+   //array for per thread bin_counts
+   int loc_bin_cts[THREAD_COUNT][bin_count];
+   memset(loc_bin_cts, 0, sizeof(loc_bin_cts[0][0]) * THREAD_COUNT * bin_count);
 
    float bin_width = (max_meas-min_meas)/bin_count;
 
-   int i=0;
+
    // initialize bin_counts to zeros
-   for (i=0; i <bin_count; i++){
+   for (int i=0; i <bin_count; i++){
         bin_counts[i]= 0;
-    }
-   // compute bin_maxes
-    for (i=0; i <bin_count; i++){
-        bin_maxes[i] = min_meas + bin_width*(i+1);
     }
 
     #pragma omp parallel
     {
+        // compute bin_maxes
+        # pragma omp for
+        for (int i=0; i <bin_count; i++){
+            bin_maxes[i] = min_meas + bin_width*(i+1);
+        }
+
+
+        int threadID = omp_get_thread_num();
+
         #pragma omp for
-        for (i=0; i< data_count;i++){
+        for (int i=0; i< data_count;i++){
             int bin = Find_bin(data[i] , bin_maxes, bin_count, min_meas);
-            #pragma omp critical
-            bin_counts[bin]++;
+            loc_bin_cts[threadID][bin]++;
+
+        }
+
+
+        #pragma omp for
+        for (int i=0; i<THREAD_COUNT; i++){
+            for(int j=0; j< bin_count; j++){
+                //printf("fdfd");
+                bin_counts[j] += loc_bin_cts[i][j];
+            }
         }
     }
-    for (i=0; i <bin_count; i++){
+    for (int i=0; i <bin_count; i++){
         printf("%.4f   %d \n", bin_maxes[i], bin_counts[i]);
     }
-   return 0;
+    return 0;
 }
 
 int Find_bin(float elem, float bin_maxes[], int bin_count, float min_meas){
