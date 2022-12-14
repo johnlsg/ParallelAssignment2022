@@ -59,7 +59,10 @@ int main(int argc, char* argv[]) {
         }
     }
     for (int i=0; i <bin_count; i++){
-        printf("%.4f   %d \n", bin_maxes[i], bin_counts[i]);
+        if(i==0){
+            printf("bin_maxes\tbin_counts\n");
+        }
+        printf("%.4f\t\t%d \n", bin_maxes[i], bin_counts[i]);
     }
     return 0;
 }
