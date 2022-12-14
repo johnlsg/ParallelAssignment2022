@@ -20,26 +20,35 @@ int main(int argc, char* argv[]) {
 
    float bin_width = (max_meas-min_meas)/bin_count;
 
-   int i=0;
+
    // initialize bin_counts to zeros
-   for (i=0; i <bin_count; i++){
+   for (int i=0; i <bin_count; i++){
         bin_counts[i]= 0;
     }
-   // compute bin_maxes
-    for (i=0; i <bin_count; i++){
-        bin_maxes[i] = min_meas + bin_width*(i+1);
-    }
-
     #pragma omp parallel
     {
+
+        // compute bin_maxes
         #pragma omp for
-        for (i=0; i< data_count;i++){
+        for (int i=0; i <bin_count; i++){
+            bin_maxes[i] = min_meas + bin_width*(i+1);
+        }
+
+        //openmp - request 8 threads
+        omp_set_num_threads(THREAD_COUNT);
+
+
+        #pragma omp single
+        printf("Number of threads used: %d \n", omp_get_num_threads());
+
+        #pragma omp for
+        for (int i=0; i< data_count;i++){
             int bin = Find_bin(data[i] , bin_maxes, bin_count, min_meas);
             #pragma omp critical
             bin_counts[bin]++;
         }
     }
-    for (i=0; i <bin_count; i++){
+    for (int i=0; i <bin_count; i++){
         printf("%.4f   %d \n", bin_maxes[i], bin_counts[i]);
     }
    return 0;
