@@ -31,8 +31,14 @@ int main(int argc, char* argv[]) {
         bin_counts[i]= 0;
     }
 
+    omp_set_num_threads(THREAD_COUNT);
+
     #pragma omp parallel
     {
+
+        #pragma omp single
+        printf("Number of threads used: %d\n", omp_get_num_threads());
+
         // compute bin_maxes
         # pragma omp for
         for (int i=0; i <bin_count; i++){
@@ -49,12 +55,11 @@ int main(int argc, char* argv[]) {
 
         }
 
-
         #pragma omp for
-        for (int i=0; i<THREAD_COUNT; i++){
-            for(int j=0; j< bin_count; j++){
-                //printf("fdfd");
-                bin_counts[j] += loc_bin_cts[i][j];
+        for (int i=0; i<bin_count; i++){
+            for(int j=0; j< THREAD_COUNT; j++)
+            {
+                bin_counts[i] += loc_bin_cts[j][i];
             }
         }
     }
