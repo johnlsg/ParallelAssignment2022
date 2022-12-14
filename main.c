@@ -25,6 +25,8 @@ int main(int argc, char* argv[]) {
    for (int i=0; i <bin_count; i++){
         bin_counts[i]= 0;
     }
+    //openmp - request 8 threads
+    omp_set_num_threads(THREAD_COUNT);
     #pragma omp parallel
     {
 
@@ -34,8 +36,7 @@ int main(int argc, char* argv[]) {
             bin_maxes[i] = min_meas + bin_width*(i+1);
         }
 
-        //openmp - request 8 threads
-        omp_set_num_threads(THREAD_COUNT);
+
 
 
         #pragma omp single
