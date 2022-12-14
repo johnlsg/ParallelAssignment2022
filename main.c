@@ -30,12 +30,15 @@ int main(int argc, char* argv[]) {
         bin_maxes[i] = min_meas + bin_width*(i+1);
     }
 
-
-    for (i=0; i< data_count;i++){
-        int bin = Find_bin(data[i] , bin_maxes, bin_count, min_meas);
-        bin_counts[bin]++;
+    #pragma omp parallel
+    {
+        #pragma omp for
+        for (i=0; i< data_count;i++){
+            int bin = Find_bin(data[i] , bin_maxes, bin_count, min_meas);
+            #pragma omp critical
+            bin_counts[bin]++;
+        }
     }
-
     for (i=0; i <bin_count; i++){
         printf("%.4f   %d \n", bin_maxes[i], bin_counts[i]);
     }
